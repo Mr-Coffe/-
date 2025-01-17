@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş Animasyon</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* scroll engelle */
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative; /* pozisyonlar için referans */
+        }
+        #heart-container{
+            position:absolute;
+            top: 20px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+        }
+        canvas {
+            position: absolute; /* çiçek için pozisyon*/
+           
+        }
+
+    </style>
+</head>
+<body>
+        
+    <canvas id="flowerCanvas"></canvas>
+    <div id="heart-container">
+          <canvas id="kalpCanvas"></canvas>
+    </div>
+
+
+    <script>
+    const canvas = document.getElementById('flowerCanvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const flowerData = [
+    { x: canvas.width / 2 - 200, y: canvas.height / 2, color1: "#c70039", color2:"#900c3f", delay:0,},
+    { x: canvas.width / 2, y: canvas.height / 2, color1: "#c70039", color2:"#900c3f",delay:100,},
+    { x: canvas.width / 2 + 200, y: canvas.height / 2, color1: "#c70039", color2:"#900c3f",delay:200}
+   ];
+
+    const flowerSize = 40;
+    let animationFrame=null;
+    
+    function drawFlower(x, y,scale,color1,color2) {
+       ctx.beginPath();
+       ctx.moveTo(x,y);
+      
+        const flowerColor = ctx.createRadialGradient(x, y, flowerSize/4, x, y, flowerSize);
+        flowerColor.addColorStop(0, color1);
+        flowerColor.addColorStop(1, color2);
+        ctx.fillStyle = flowerColor;
+      
+      for (let i = 0; i < 5; i++) {
+         let angle = Math.PI * 2 / 5 * i;
+         let curX=x + Math.cos(angle) * flowerSize ;
+         let curY=y + Math.sin(angle) * flowerSize ;
+         ctx.lineTo(curX, curY);
+        
+       }
+       ctx.closePath();
+       ctx.fill();
+       
+
+        ctx.beginPath();
+        ctx.strokeStyle = color2;
+        ctx.lineWidth=3;
+        ctx.moveTo(x, y + flowerSize);
+         
+        ctx.lineTo(x, y + 200)
+        ctx.stroke();
+
+        
+        const leafColor = ctx.createLinearGradient(x -20, y + 200, x + 20 ,y+200);
+        leafColor.addColorStop(0, "lime");
+        leafColor.addColorStop(1, "green");
+
+        ctx.fillStyle = leafColor;
+        ctx.beginPath();
+       
+        let leafX = x - 10;
+        let leafY = y + 200;
+        let leafAngle = Math.PI / 4;
+         
+        ctx.ellipse(leafX, leafY, 10, 20, leafAngle, 0, 2 * Math.PI);
+        ctx.fill();
+
+        leafX= x + 10;
+         leafAngle = -Math.PI / 4;
+         ctx.beginPath();
+        ctx.ellipse(leafX, leafY, 10, 20, leafAngle, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+
+    function drawFlowers(){
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+   
+        for(const flower of flowerData){
+              setTimeout(() => {
+                drawFlower(flower.x, flower.y,2, flower.color1,flower.color2);
+              }, flower.delay);
+          }
+          animationFrame = requestAnimationFrame(drawFlowers)
+        }
+
+
+     // kalbi buraya yapıştırdım 
+        const kalpCanvas = document.getElementById('kalpCanvas');
+        const kalpCtx = kalpCanvas.getContext('2d');
+
+        kalpCanvas.width = 100;
+        kalpCanvas.height = 100;
+
+        const centerX = kalpCanvas.width / 2;
+        const centerY = kalpCanvas.height / 2;
+
+        const scale = 3;
+        let i = 0;
+        const totalIterations = 2500;
+
+        function xt(t) {
+            return 16 * Math.pow(Math.sin(t), 3);
+        }
+
+        function yt(t) {
+            return 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+        }
+
+        function drawKalpFrame() {
+            if (i >= totalIterations) {
+                return;
+            }
+            const x = xt(i) * scale;
+            const y = yt(i) * scale;
+
+            kalpCtx.beginPath();
+            kalpCtx.moveTo(centerX, centerY);
+            kalpCtx.lineTo(centerX + x, centerY - y);
+            kalpCtx.strokeStyle = 'red';
+            kalpCtx.stroke();
+
+            i++;
+            requestAnimationFrame(drawKalpFrame);
+        }
+
+         drawKalpFrame();
+         drawFlowers();
+
+
+
+     window.addEventListener('resize', ()=>{
+       canvas.width = window.innerWidth;
+       canvas.height = window.innerHeight;
+
+       flowerData[0].x=canvas.width / 2 - 200;
+       flowerData[0].y=canvas.height / 2;
+
+       flowerData[1].x=canvas.width / 2;
+       flowerData[1].y=canvas.height / 2;
+       
+       flowerData[2].x=canvas.width / 2 + 200;
+       flowerData[2].y=canvas.height / 2;
+
+       cancelAnimationFrame(animationFrame)
+       drawFlowers()
+     })
+
+    </script>
+</body>
+</html>
